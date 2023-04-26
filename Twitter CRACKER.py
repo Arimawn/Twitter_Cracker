@@ -173,6 +173,9 @@ while True:
                 Output.write(f"{Username}:{Password}")
                 Output.write("\n")
                 Driver.quit()
+        else:
+            print("Account isn't ok!")
+            Driver.quit()
 
     except Exception:
         print(Exception)          
